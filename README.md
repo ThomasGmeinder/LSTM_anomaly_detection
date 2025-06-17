@@ -67,3 +67,6 @@ Difference in accuracy: 0.00000002
 Hyperparameters: UNROLL=False, FEATURES=1, SEQ_LEN=100, TRAINING_BATCH_SIZE=8, INFERENCE_BATCH_SIZE=1, NUM_SAMPLES=1000, HIDDEN_UNITS=32
 ```
 
+### Jupyter Notebook
+
+The notebook [lstm_anomaly_detection_train_quantize_tflite.ipynb](./lstm_anomaly_detection_train_quantize_tflite.ipynb) is previded as executable documentation with inline visualisations.
