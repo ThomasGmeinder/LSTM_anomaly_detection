@@ -204,13 +204,13 @@ def run_tflite_model(interpreter, X):
 int8_preds = run_tflite_model(interpreter, X_test)
 int8_preds = (int8_preds > 0.5).astype(np.float32)
 int8_accuracy = np.mean(int8_preds.flatten() == y_test.flatten())
-
+print(f"INT8 Quantized Model Test Accuracy: {int8_accuracy:.8f}")
 # %% [markdown]
 # ## Compare accuracy of FP32 and INT8 models
 # %%
 print("\n## Comparing accuracy of FP32 and INT8 models")
+print(f"FP32 Test Accuracy: {accuracy:.8f}")
 print(f"INT8 Quantized Model Test Accuracy: {int8_accuracy:.8f}")
-print(f"FP32 Test Accuracy: {accuracy:.8f}, Loss: {loss:.8f}")
 # accuracy difference should be minimal, around 1-2% loss in accuracy
 print(f"Difference in accuracy: {accuracy - int8_accuracy:.8f}") 
 # print hyperparameters

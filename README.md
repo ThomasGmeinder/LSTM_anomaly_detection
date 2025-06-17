@@ -4,7 +4,7 @@ This example creates an LSTM in Tensorflow for the purpose of detecting anomalie
 The model is trained with sinusoidal data plus noise (normal case). Random spikes are added to generate data anomalies.
 The trained model is then saved, quantized to int8 and converted to .tflite format.
 
-The script also runs inference on the original fp32 model and the quantized .tflite model and compares the MSE.
+Finally, the script runs inference with the original fp32 model and the quantized .tflite model and then compares the accuracy.
 
 ## Setup
 ```
@@ -59,10 +59,11 @@ INT8-quantized model saved as lstm_model_int8_quantized.tflite
 
 ## Evaluating the INT8 TFLite model
 INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+INT8 Quantized Model Test Accuracy: 0.98000000
 
 ## Comparing accuracy of FP32 and INT8 models
+FP32 Test Accuracy: 0.98000002
 INT8 Quantized Model Test Accuracy: 0.98000000
-FP32 Test Accuracy: 0.98000002, Loss: 0.19973721
 Difference in accuracy: 0.00000002
 Hyperparameters: UNROLL=False, FEATURES=1, SEQ_LEN=100, TRAINING_BATCH_SIZE=8, INFERENCE_BATCH_SIZE=1, NUM_SAMPLES=1000, HIDDEN_UNITS=32
 ```
