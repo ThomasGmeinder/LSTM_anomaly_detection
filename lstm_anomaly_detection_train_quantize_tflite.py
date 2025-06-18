@@ -141,13 +141,16 @@ print(f"FP32 Model Test Accuracy from predict: {fp32_accuracy:.8f}")
 # %% [markdown]
 # ## Visualise some predictions
 # %%
-plt.figure(figsize=(12, 6))
-plt.suptitle("Sample Predictions from FP32 Model")
-for i in range(3):
-    plt.plot(X_test[i].squeeze(), label='Sensor Signal')
-    plt.title(f"True Label: {int(y_test[i][0])}, Predicted: {fp32_preds[i][0]:.2f}")
-    plt.legend()
-    plt.show()
+fig, axes = plt.subplots(nrows=3, figsize=(12, 6))
+fig.suptitle("Sample Predictions from FP32 Model")
+
+for i, ax in enumerate(axes):
+    ax.plot(X_test[i].squeeze(), label='Sensor Signal')
+    ax.set_title(f"True Label: {int(y_test[i][0])}, Predicted: {fp32_preds[i][0]:.2f}")
+    ax.legend()
+
+plt.tight_layout()
+plt.show()
 
 # %% [markdown]
 # ## Quantize and convert to the TFLite format
