@@ -4,7 +4,7 @@ This example creates an LSTM in Tensorflow for the purpose of detecting anomalie
 The model is trained with sinusoidal data plus noise (normal case). Random spikes are added to generate data anomalies.
 The trained model is then saved, quantized to int8 and converted to .tflite format.
 
-Finally, the script runs inference with the original fp32 model and the quantized .tflite model and then compares the accuracy.
+Finally, inference is run with the original fp32 model and the quantized .tflite model to determine the difference in accuracy.
 
 ## Setup
 ```

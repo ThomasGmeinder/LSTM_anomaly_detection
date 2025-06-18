@@ -1,5 +1,11 @@
 # %% [markdown]
-# # LSTM trained for Anomaly Detection in Time-Series Data, quantized to INT8 TFLite format
+# # LSTM trained for Anomaly Detection in Time-Series Data
+# This example creates an LSTM in Tensorflow for the purpose of detecting anomalies in time series data.
+# The model is trained with sinusoidal data plus noise (normal case). Random spikes are added to generate anomalies.
+# The trained model is then saved, quantized to int8 and converted to .tflite format.
+
+# Finally, inference is run with the original fp32 model and the quantized .tflite model to determine the difference in accuracy.
+
 
 # %%
 import tensorflow as tf
@@ -70,8 +76,8 @@ X = (X - np.mean(X)) / np.std(X)
 
 # %% [markdown]
 # ### Split data into train/val/test
-# %%
 # 70% train, 15% validation, 15% test
+# %%
 X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.3, random_state=SEED)
 X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=SEED)
 
@@ -146,7 +152,7 @@ fig.suptitle("Sample Predictions from FP32 Model")
 
 for i, ax in enumerate(axes):
     ax.plot(X_test[i].squeeze(), label='Sensor Signal')
-    ax.set_title(f"True Label: {int(y_test[i][0])}, Predicted: {fp32_preds[i][0]:.2f}")
+    ax.set_title(f"Anomaly Label: {int(y_test[i][0])}, Predicted: {fp32_preds[i][0]:.2f}")
     ax.legend()
 
 plt.tight_layout()
