@@ -70,4 +70,10 @@ Hyperparameters: UNROLL=False, FEATURES=1, SEQ_LEN=100, TRAINING_BATCH_SIZE=8, I
 
 ### Jupyter Notebook
 
-The notebook [lstm_anomaly_detection_train_quantize_tflite.ipynb](./lstm_anomaly_detection_train_quantize_tflite.ipynb) is previded as executable documentation with inline visualisations.
+The notebook [lstm_anomaly_detection_train_quantize_tflite.ipynb](./lstm_anomaly_detection_train_quantize_tflite.ipynb) is provided as executable documentation with inline visualisations.
+
+It produces a visualisation of predictions including anomalies:
+![Predictions](predictions.png)
+
+*Note*: The notebook is generated directly from [lstm_anomaly_detection_train_quantize_tflite.py](./lstm_anomaly_detection_train_quantize_tflite.py) using the command ` jupytext lstm_anomaly_detection_train_quantize_tflite.py --to ipynb`
+
