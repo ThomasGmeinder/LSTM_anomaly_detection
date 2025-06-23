@@ -40,6 +40,7 @@ HIDDEN_UNITS = 32   # Reduced to prevent overfitting
 
 # suppress warnings
 import logging
+import time
 logging.getLogger('tensorflow').setLevel(logging.ERROR)
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # 0 = all logs, 1 = filter INFO, 2 = +WARNING, 3 = ERROR only
 
@@ -196,18 +197,29 @@ input_details = interpreter.get_input_details()
 output_details = interpreter.get_output_details()
 
 def run_tflite_model(interpreter, X):
+
     input_scale, input_zero_point = input_details[0]['quantization']
     output_scale, output_zero_point = output_details[0]['quantization']
 
     preds = []
+    times = []
     for i in range(len(X)):
         x = X[i:i+1]
         x_int8 = np.round(x / input_scale + input_zero_point).astype(np.int8)
+
+        start_time = time.time()
         interpreter.set_tensor(input_details[0]['index'], x_int8)
         interpreter.invoke()
+        end_time = time.time()
+
+        times.append(end_time - start_time)
+
         output = interpreter.get_tensor(output_details[0]['index'])
         output = (output.astype(np.float32) - output_zero_point) * output_scale
         preds.append(output[0])
+
+    mean_time = sum(times) / len(times)
+    print(f"Mean tflite inference time: {mean_time:.6f} seconds")
     return np.array(preds)
 
 int8_preds = run_tflite_model(interpreter, X_test)
