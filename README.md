@@ -1,5 +1,4 @@
 # LSTM for anomaly detetion
-
 This example creates an LSTM in Tensorflow for the purpose of detecting anomalies in time series data.
 The model is trained with sinusoidal data plus noise (normal case). Random spikes are added to generate data anomalies.
 The trained model is then saved, quantized to int8 and converted to .tflite format.
@@ -77,3 +76,14 @@ It produces a visualisation of predictions including anomalies:
 
 *Note*: The notebook is generated directly from [lstm_anomaly_detection_train_quantize_tflite.py](./lstm_anomaly_detection_train_quantize_tflite.py) using the command ` jupytext lstm_anomaly_detection_train_quantize_tflite.py --to ipynb`
 
+## Performance
+
+The following table compares the measured mean inference time for different Hyperparameter combinations.
+This was measured on Ubuntu 20.04.6 with tensorflow 2.19.0 on AMD Ryzen 7 PRO 5850U CPU running at 1.90 GHz
+
+| SEQ_LEN | Unrolled | Inference time (ms) |
+|---------|----------|----------------------|
+| 10      | False    | 0.189               |
+| 10      | True     | 0.034               |
+| 100     | False    | 1.47                |
+| 100     | True     | 1.79                |

@@ -22,7 +22,7 @@ import random
 SEED=42 
 random.seed(SEED) 
 
-UNROLL = False  # Use dynamic unrolling for LSTM
+UNROLL = True  # Use dynamic unrolling for LSTM
 
 if UNROLL:
     model_file = "lstm_model_unrolled_fp32.keras"
@@ -82,13 +82,6 @@ X = (X - np.mean(X)) / np.std(X)
 X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.3, random_state=SEED)
 X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=SEED)
 
-# %% [markdown]
-# ### Save test data to files for C++ use
-
-# %%
-print("Saving test data to files for C++ inference run use...")
-np.savetxt("X_test.txt", X_test.reshape(X_test.shape[0], -1), delimiter=' ')
-np.savetxt("y_test.txt", y_test, delimiter=' ')
 
 # %% [markdown]
 # ## Load or create/train the model
@@ -104,7 +97,7 @@ else:
         tf.keras.layers.LSTM(HIDDEN_UNITS, unroll=UNROLL, dropout=0.2, recurrent_dropout=0.2),
         tf.keras.layers.Dense(1, activation='sigmoid')
     ])
-    print("No existing model found. A new model will be created.")
+    print(f"No existing model {model_file} found. A new model will be created.")
     model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
     # Train the model
@@ -207,8 +200,8 @@ def run_tflite_model(interpreter, X):
         x = X[i:i+1]
         x_int8 = np.round(x / input_scale + input_zero_point).astype(np.int8)
 
-        start_time = time.time()
         interpreter.set_tensor(input_details[0]['index'], x_int8)
+        start_time = time.time()
         interpreter.invoke()
         end_time = time.time()
 
@@ -222,10 +215,25 @@ def run_tflite_model(interpreter, X):
     print(f"Mean tflite inference time: {mean_time:.6f} seconds")
     return np.array(preds)
 
-int8_preds = run_tflite_model(interpreter, X_test)
-int8_preds = (int8_preds > 0.5).astype(np.float32)
-int8_accuracy = np.mean(int8_preds.flatten() == y_test.flatten())
+tflite_preds = run_tflite_model(interpreter, X_test)
+tflite_preds = (tflite_preds > 0.5).astype(np.float32)
+int8_accuracy = np.mean(tflite_preds.flatten() == y_test.flatten())
 print(f"INT8 Quantized Model Test Accuracy: {int8_accuracy:.8f}")
+
+# %% [markdown]
+# ## Prepare test data for inference runs on embedded target
+
+# %%
+# Compute X_test_int8 and y_test_int8 using the same quantization parameters
+input_scale, input_zero_point = input_details[0]['quantization']
+X_test_int8 = np.round(X_test / input_scale + input_zero_point).astype(np.int8)
+y_test_int8 = y_test.astype(np.int8)  # y is already float32, so we can convert it directly to int8
+
+# Output X_test_int8 and y_test_int8 to txt files for C++ use
+np.savetxt("X_test_int8.txt", X_test_int8.reshape(-1, SEQ_LEN * FEATURES), fmt='%d')
+np.savetxt("y_test_int8.txt", y_test_int8, fmt='%d')
+
+
 # %% [markdown]
 # ## Compare accuracy of FP32 and INT8 models
 # %%
