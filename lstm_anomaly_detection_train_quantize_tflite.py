@@ -122,12 +122,25 @@ else:
     
 # %% [markdown]
 # ## Evaluate on test data
+# Create a inference model from the training model to guarantee batch size of 1 and no dropouts
+# This is also important for the quanizatin and tflite conversion going forward
 # %%
+print("\n## Creating inference model from the trained model")
+inference_model = tf.keras.Sequential([
+    tf.keras.layers.Input(shape=(SEQ_LEN, FEATURES), batch_size=1),
+    tf.keras.layers.LSTM(HIDDEN_UNITS, unroll=UNROLL),
+    tf.keras.layers.Dense(1, activation='sigmoid')
+])
+
+inference_model.set_weights(model.get_weights())
+
+inference_model.compile(loss='binary_crossentropy', metrics=['accuracy'])
+
 print("\n## Evaluating the model on test data")
-loss, accuracy = model.evaluate(X_test, y_test, batch_size=INFERENCE_BATCH_SIZE)
+loss, accuracy = inference_model.evaluate(X_test, y_test, batch_size=INFERENCE_BATCH_SIZE)
 print(f"FP32 Test Accuracy from evaluate: {accuracy:.8f}, Loss: {loss:.8f}")
 
-fp32_preds = model.predict(X_test, batch_size=INFERENCE_BATCH_SIZE)
+fp32_preds = inference_model.predict(X_test, batch_size=INFERENCE_BATCH_SIZE)
 
 # double check accuracy
 fp32_preds_rounded = (fp32_preds > 0.5).astype(np.float32)
@@ -159,7 +172,7 @@ def representative_dataset():
         yield [X_train[i:i+1]]
 
 # Convert to quantized TFLite model
-converter = tf.lite.TFLiteConverter.from_keras_model(model)
+converter = tf.lite.TFLiteConverter.from_keras_model(inference_model)
 converter.optimizations = [tf.lite.Optimize.DEFAULT]
 converter.representative_dataset = representative_dataset
 converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
@@ -223,7 +236,7 @@ print(f"INT8 Quantized Model Test Accuracy: {int8_accuracy:.8f}")
 # Compute X_test_int8 and y_test_int8 using the same quantization parameters
 input_scale, input_zero_point = input_details[0]['quantization']
 X_test_int8 = np.round(X_test / input_scale + input_zero_point).astype(np.int8)
-y_test_int8 = y_test.astype(np.int8)  # y is already float32, so we can convert it directly to int8
+y_test_int8 = y_test.astype(np.int8)  # y is already binary float32 values (0, 1), so we can convert it directly to int8
 
 # Output X_test_int8 and y_test_int8 to txt files for C++ use
 np.savetxt("X_test_int8.txt", X_test_int8.reshape(-1, SEQ_LEN * FEATURES), fmt='%d')
