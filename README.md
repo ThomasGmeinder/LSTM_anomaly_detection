@@ -78,7 +78,7 @@ It produces a visualisation of predictions including anomalies:
 
 ## Performance
 
-The following table compares the measured mean inference time for different Hyperparameter combinations.
+The following table compares the measured mean inference time of the tflite model for different Hyperparameter combinations.
 This was measured on Ubuntu 20.04.6 with tensorflow 2.19.0 on AMD Ryzen 7 PRO 5850U CPU running at 1.90 GHz
 
 | SEQ_LEN | Unrolled | Inference time (ms) |

@@ -23,13 +23,6 @@ SEED=42
 random.seed(SEED) 
 
 UNROLL = True  # Use dynamic unrolling for LSTM
-
-if UNROLL:
-    model_file = "lstm_model_unrolled_fp32.keras"
-    tflite_file = "lstm_model_unrolled_int8_quantized.tflite"
-else:
-    model_file = "lstm_model_fp32.keras"
-    tflite_file = "lstm_model_int8_quantized.tflite"
     
 FEATURES = 1
 SEQ_LEN = 100
@@ -37,6 +30,9 @@ TRAINING_BATCH_SIZE = 8
 INFERENCE_BATCH_SIZE = 1
 NUM_SAMPLES = 1000  # Increased for better generalization
 HIDDEN_UNITS = 32   # Reduced to prevent overfitting
+
+model_file = f"lstm_model_SL{SEQ_LEN}{'_unrolled' if UNROLL else ''}_fp32.keras"
+tflite_file = f"lstm_model_SL{SEQ_LEN}{'_unrolled' if UNROLL else ''}_int8_quantized.tflite"
 
 # suppress warnings
 import logging
