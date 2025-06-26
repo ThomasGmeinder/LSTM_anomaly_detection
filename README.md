@@ -76,6 +76,27 @@ It produces a visualisation of predictions including anomalies:
 
 *Note*: The notebook is generated directly from [lstm_anomaly_detection_train_quantize_tflite.py](./lstm_anomaly_detection_train_quantize_tflite.py) using the command ` jupytext lstm_anomaly_detection_train_quantize_tflite.py --to ipynb`
 
+## tflite inference
+
+A dedicated script [tflite_inference.py](./tflite_inference.py) is provided to run inference with a chosen .tflite file. 
+This script reads input data and expected output data from text files.
+
+Example command: 
+`python tflite_inference.py --tflite_file lstm_model_SL100_int8_quantized.tflite --X_test_file X_test_int8.txt --y_test_file y_test_int8.txt `
+
+Output:
+```
+## Loading the test dataset from X_test_int8.txt and y_test_int8.txt
+
+## Evaluating the INT8 TFLite model
+INFO: Created TensorFlow Lite delegate for select TF ops.
+INFO: TfLiteFlexDelegate delegate: 2 nodes delegated out of 9 nodes with 2 partitions.
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+
+Mean tflite inference time: 0.004048 seconds
+Test Accuracy for INT8 Quantized Model lstm_model_SL100_int8_quantized.tflite: 0.89333333
+```
+
 ## Performance
 
 The following table compares the measured mean inference time of the tflite model for different Hyperparameter combinations.
