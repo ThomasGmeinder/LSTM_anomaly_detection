@@ -88,12 +88,12 @@ Output:
 ```
 ## Loading the test dataset from X_test_int8.txt and y_test_int8.txt
 
-## Evaluating the INT8 TFLite model
+## Evaluating the tflite model lstm_model_SL100_int8_quantized.tflite
 INFO: Created TensorFlow Lite delegate for select TF ops.
 INFO: TfLiteFlexDelegate delegate: 2 nodes delegated out of 9 nodes with 2 partitions.
 INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
 
-Mean tflite inference time: 0.004048 seconds
+Mean tflite inference time: 0.001407 seconds
 Test Accuracy for INT8 Quantized Model lstm_model_SL100_int8_quantized.tflite: 0.89333333
 ```
 
