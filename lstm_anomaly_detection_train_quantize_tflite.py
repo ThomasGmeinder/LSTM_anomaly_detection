@@ -122,8 +122,8 @@ else:
     
 # %% [markdown]
 # ## Evaluate on test data
-# Create a inference model from the training model to guarantee batch size of 1 and no dropouts
-# This is also important for the quanizatin and tflite conversion going forward
+# Create inference model from the trained model to guarantee batch size of 1
+# This is important for embedded targets where we want to run inference on single samples.
 # %%
 print("\n## Creating inference model from the trained model")
 inference_model = tf.keras.Sequential([
@@ -198,16 +198,11 @@ interpreter.allocate_tensors()
 input_details = interpreter.get_input_details()
 output_details = interpreter.get_output_details()
 
-def run_tflite_model(interpreter, X):
-
-    input_scale, input_zero_point = input_details[0]['quantization']
-    output_scale, output_zero_point = output_details[0]['quantization']
-
+def run_tflite_model(interpreter, X_test_int8):
     preds = []
     times = []
-    for i in range(len(X)):
-        x = X[i:i+1]
-        x_int8 = np.round(x / input_scale + input_zero_point).astype(np.int8)
+    for i in range(len(X_test_int8)):
+        x_int8 = X_test_int8[i:i+1]
 
         interpreter.set_tensor(input_details[0]['index'], x_int8)
         start_time = time.time()
@@ -217,31 +212,33 @@ def run_tflite_model(interpreter, X):
         times.append(end_time - start_time)
 
         output = interpreter.get_tensor(output_details[0]['index'])
-        output = (output.astype(np.float32) - output_zero_point) * output_scale
         preds.append(output[0])
 
     mean_time = sum(times) / len(times)
     print(f"Mean tflite inference time: {mean_time:.6f} seconds")
     return np.array(preds)
 
-tflite_preds = run_tflite_model(interpreter, X_test)
-tflite_preds = (tflite_preds > 0.5).astype(np.float32)
-int8_accuracy = np.mean(tflite_preds.flatten() == y_test.flatten())
-print(f"INT8 Quantized Model Test Accuracy: {int8_accuracy:.8f}")
-
-# %% [markdown]
-# ## Prepare test data for inference runs on embedded target
-
-# %%
 # Compute X_test_int8 and y_test_int8 using the same quantization parameters
 input_scale, input_zero_point = input_details[0]['quantization']
 X_test_int8 = np.round(X_test / input_scale + input_zero_point).astype(np.int8)
 y_test_int8 = y_test.astype(np.int8)  # y is already binary float32 values (0, 1), so we can convert it directly to int8
 
+tflite_outputs_int8 = run_tflite_model(interpreter, X_test_int8)
+# Convert predictions to binary (0 or 1) and calculate accuracy
+output_scale, output_zero_point = output_details[0]['quantization']
+tflite_preds = (tflite_outputs_int8.astype(np.float32) - output_zero_point) * output_scale  # Dequantize the predictions
+tflite_preds = (tflite_preds > 0.5).astype(np.int8)  # Convert predictions to binary (0 or 1)
+
+int8_accuracy = np.mean(tflite_preds.flatten() == y_test.flatten())
+print(f"Test Accuracy for INT8 Quantized Model {tflite_file}: {int8_accuracy:.8f}")
+
+# %% [markdown]
+# ## Prepare test data for inference runs on embedded target
+
 # Output X_test_int8 and y_test_int8 to txt files for C++ use
 np.savetxt("X_test_int8.txt", X_test_int8.reshape(-1, SEQ_LEN * FEATURES), fmt='%d')
 np.savetxt("y_test_int8.txt", y_test_int8, fmt='%d')
-
+np.savetxt("tflite_outputs_int8.txt", tflite_outputs_int8, fmt='%d')
 
 # %% [markdown]
 # ## Compare accuracy of FP32 and INT8 models
